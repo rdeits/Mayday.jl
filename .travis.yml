@@ -11,7 +11,7 @@ notifications:
 
 
 before_script:
-  - julia -c 'Pkg.add("SCS")'
+  - julia -e 'Pkg.add("SCS")'
 # uncomment the following lines to override the default test script
 #script:
 #  - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
