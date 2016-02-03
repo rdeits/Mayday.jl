@@ -36,7 +36,7 @@ end
 function monomials(variables, degrees=0:2)
     sort!(degrees)
     monomials = Array(MPoly{Float64}, 0)
-    powers = zeros(Int64, length(variables))
+    powers = zeros(Int, length(variables))
     total = 0
     terms = OrderedDict(powers=>1.0)
     while powers[1] <= degrees[end]
