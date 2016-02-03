@@ -61,11 +61,6 @@ function monomials(variables, degrees=0:2)
     return monomials
 end
 
-dot(x::Number, y::MPoly) = x * y
-dot(x::MPoly, y::Number) = x * y
-dot(x::MPoly, y::JuMP.GenericAffExpr) = x*y
-dot(x::JuMP.GenericAffExpr, y::MPoly) = x*y
-
 function defSoSPolynomial{T}(model::JuMP.Model, variables::Vector{Symbol}, basis::Vector{MPoly{T}})
     @defVar(model, Q[1:length(basis), 1:length(basis)], SDP)
     return sum(sum(basis .* Q, 1)' .* basis)
