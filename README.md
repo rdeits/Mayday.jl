@@ -7,7 +7,4 @@ A naïve implementation of sums-of-squares (SoS) polynomial optimization through
 
 ## Requirements
 
-In addition to the packages listed in `REQUIRE`, you'll need an SDP solver with a JuMP interface. Two good options are `SCS.jl` (free software) and `Mosek.jl` (proprietary). Mosek requires a license, but is free for academic use: <https://mosek.com/introduction/buy-mosek> and is generally faster. The easiest way to get up and running is to do: 
-
-	julia> Pkg.add("SCS")
-
+To use this package, you'll need an SDP solver with a JuMP interface. If you installed Mayday with `Pkg.add()`, then you've already gotten `SCS.jl`, a wrapper for the free SCS solver, and you're all set. You can also choose to install the `Mosek.jl` package if you want to use  Mosek, a proprietary solver. Mosek requires a license, but is free for academic use: <https://mosek.com/introduction/buy-mosek> and is generally faster. 
