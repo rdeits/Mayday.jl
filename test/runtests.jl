@@ -24,6 +24,7 @@ function test_simple_sos_problem()
 
 	# Extract the result:
 	poly = sum(map(getValue, coeffs) .* monos)
+	@show poly
 
 	# Verify it:
 	x = linspace(-2, 2)
