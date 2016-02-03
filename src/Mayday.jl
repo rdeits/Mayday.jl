@@ -2,16 +2,22 @@ module Mayday
 
 using JuMP
 using MultiPoly
-import MultiPoly: print
+import MultiPoly: print, evaluate
 import Base: dot
 import DataStructures: OrderedDict
 export monomials, 
-	   generator,
-	   generators, 
-	   evaluate,
-	   defSoSPolynomial, 
-	   addPolynomialEqualityConstraint,
-	   addSoSConstraint
+       generator,
+       generators, 
+       evaluate,
+       deg,
+       grad,
+       jacobian,
+       diff,
+       MPoly,
+       defPolynomial,
+       defSoSPolynomial, 
+       addPolynomialEqualityConstraint,
+       addSoSConstraint
 
 generators(s::Symbol...) = MultiPoly.generators(MPoly{Float64}, s...)
 generator(s::Symbol) = generators(s)[1]
@@ -42,7 +48,7 @@ function monomials(variables, degrees=0:2)
     while powers[1] <= degrees[end]
         for d = degrees
             if total == d
-            	push!(monomials, MPoly{Float64}(terms, variables))
+                push!(monomials, MPoly{Float64}(terms, variables))
                 break
             end
         end
@@ -60,6 +66,25 @@ function monomials(variables, degrees=0:2)
     end
     return monomials
 end
+
+grad(poly::MPoly, symbols::Symbol...) = [diff(poly, s) for s in symbols]
+jacobian{T}(polys::Vector{MPoly{T}}, symbols::Symbol...) = vcat([grad(poly, symbols...)' for poly in polys]...)
+
+function evaluate{PolyType, ArgType}(polys::Array{MPoly{PolyType}}, args::ArgType...)
+    result_type = promote_type(PolyType, ArgType)
+    result = Array(result_type, size(polys)...)
+    for i = 1:length(polys)
+        result[i] = evaluate(polys[i], args...)
+    end
+    return result
+end
+
+function defPolynomial{T}(model::JuMP.Model, variables::Vector{Symbol}, basis::Vector{MPoly{T}})
+    @defVar(model, coeffs[1:length(basis)])
+    return sum(basis .* coeffs)
+end
+
+defPolynomial(model::JuMP.Model, variables::Vector{Symbol}, max_monomial_degree::Integer) = defSoSPolynomial(model, variables, monomials(variables, 0:max_monomial_degree))
 
 function defSoSPolynomial{T}(model::JuMP.Model, variables::Vector{Symbol}, basis::Vector{MPoly{T}})
     @defVar(model, Q[1:length(basis), 1:length(basis)], SDP)
