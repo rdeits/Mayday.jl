@@ -1,3 +1,6 @@
+using JuMP
+using Mayday
+
 function test_spotopt_van_der_pol()
 	# Replicates the test from https://github.com/spot-toolbox/spotless/blob/master/spotopt/tests/example_vanDerPol.m which maximizes the verified Region of Attraction of the van der Pol oscillator about the origin. 
 
