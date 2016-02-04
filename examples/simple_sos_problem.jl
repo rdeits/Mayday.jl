@@ -1,3 +1,6 @@
+using JuMP
+using Mayday
+
 function test_simple_sos_problem()
 	# Let's find a polynomial which is > 1 for x < -1 and < -1 for x > 1
 	# v(x) + d1(x) * (x + 1) is SOS
