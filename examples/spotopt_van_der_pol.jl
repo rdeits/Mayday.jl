@@ -2,7 +2,9 @@ using JuMP
 using Mayday
 
 function test_spotopt_van_der_pol()
-	# Replicates the test from https://github.com/spot-toolbox/spotless/blob/master/spotopt/tests/example_vanDerPol.m which maximizes the verified Region of Attraction of the van der Pol oscillator about the origin. 
+	# Replicates the test from https://github.com/spot-toolbox/spotless/blob/master/spotopt/tests/example_vanDerPol.m 
+	# which maximizes the verified Region of Attraction of a linear controller
+	# for the van der Pol oscillator about the origin.
 
 	x, y = generators(:x, :y)
 
@@ -28,6 +30,8 @@ function test_spotopt_van_der_pol()
 
 	result = getValue(rho)
 	@show result
+
+	# Verify rho against the answer we get from spotless
 	@test abs(result - 2.3045) < 1e-4
 end
 
