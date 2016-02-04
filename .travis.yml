@@ -9,6 +9,11 @@ julia:
 notifications:
   email: false
 
+branches:
+  only:
+    - master
+    - stable
+
 
 # uncomment the following lines to override the default test script
 #script:
