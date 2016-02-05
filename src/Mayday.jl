@@ -84,7 +84,7 @@ function defPolynomial{T}(model::JuMP.Model, variables::Vector{Symbol}, basis::V
     return sum(basis .* coeffs)
 end
 
-defPolynomial(model::JuMP.Model, variables::Vector{Symbol}, max_monomial_degree::Integer) = defSoSPolynomial(model, variables, monomials(variables, 0:max_monomial_degree))
+defPolynomial(model::JuMP.Model, variables::Vector{Symbol}, max_monomial_degree::Integer) = defPolynomial(model, variables, monomials(variables, 0:max_monomial_degree))
 
 function defSoSPolynomial{T}(model::JuMP.Model, variables::Vector{Symbol}, basis::Vector{MPoly{T}})
     @defVar(model, Q[1:length(basis), 1:length(basis)], SDP)
