@@ -1,6 +1,7 @@
 module Mayday
 
 using JuMP
+import JuMP: getValue
 using MultiPoly
 import MultiPoly: print, evaluate
 import Base: dot
@@ -111,6 +112,10 @@ function addSoSConstraint(model, poly)
     max_degree = maximum([maximum(x) for x in keys(poly.terms)])
     sos_poly = defSoSPolynomial(model, poly.vars, max_degree)
     addPolynomialEqualityConstraint(model, sos_poly, poly)
+end
+
+function getValue{T<:JuMP.GenericAffExpr}(poly::MPoly{T})
+    MPoly{Float64}(OrderedDict{Vector{Int}, Float64}(zip(keys(poly.terms), map(getValue, values(poly.terms)))), poly.vars)
 end
 
 end
