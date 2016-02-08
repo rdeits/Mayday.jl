@@ -1,4 +1,4 @@
-function variable_degrees{T<:Integer}(num_variables::Integer, poly_degrees::AbstractVector{T})
+function variable_degrees{T<:Real}(num_variables::Integer, poly_degrees::AbstractVector{T})
     max_poly_degree = maximum(poly_degrees)
     poly_degrees = Set(poly_degrees)
     all_variable_degrees = Vector{Int}[]
@@ -27,7 +27,7 @@ function monomial(variable::Symbol, degree::Integer)
     MPoly{Float64}(OrderedDict([degree]=>1.0), [variable])
 end
 
-function univariate_chebyshev_poly_first_kind(variable::Symbol, degree::Integer)
+function chebyshev_polynomial_first_kind(variable::Symbol, degree::Integer)
     x = generator(variable)
     @assert degree >= 0
     if degree == 0
@@ -35,8 +35,8 @@ function univariate_chebyshev_poly_first_kind(variable::Symbol, degree::Integer)
     elseif degree == 1
         return x
     else
-        return (2x * univariate_chebyshev_poly_first_kind(variable, degree - 1)
-                - univariate_chebyshev_poly_first_kind(variable, degree - 2))
+        return (2x * chebyshev_polynomial_first_kind(variable, degree - 1)
+                - chebyshev_polynomial_first_kind(variable, degree - 2))
     end
 end
 
@@ -47,4 +47,4 @@ function polynomial_basis(variables, degrees=0:2, generator::Function=monomial)
 end
 
 monomials(variables, degrees=0:2) = polynomial_basis(variables, degrees, monomial)
-chebyshev_basis_first_kind(variables, degrees=0:2) = polynomial_basis(variables, degrees, univariate_chebyshev_poly_first_kind)
+chebyshev_basis_first_kind(variables, degrees=0:2) = polynomial_basis(variables, degrees, chebyshev_polynomial_first_kind)

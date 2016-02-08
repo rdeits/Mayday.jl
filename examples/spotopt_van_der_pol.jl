@@ -1,7 +1,7 @@
 using JuMP
 using Mayday
 
-function test_spotopt_van_der_pol()
+function test_spotopt_van_der_pol(basis_generator=Mayday.monomial)
 	# Replicates the test from https://github.com/spot-toolbox/spotless/blob/master/spotopt/tests/example_vanDerPol.m 
 	# which maximizes the verified Region of Attraction of a linear controller
 	# for the van der Pol oscillator about the origin.
@@ -21,10 +21,9 @@ function test_spotopt_van_der_pol()
 	# Solve for the maximum RoA, parameterized by rho
 	model = Model()
 	@defVar(model, rho)
-	monos = monomials([:x, :y], 0:4)
-	lambda = defPolynomial(model, [:x, :y], monos)
+	lambda = defPolynomial(model, [:x, :y], 4, basis_generator)
 	d = Int(floor(deg(lambda * Vdot) / 2 - 1))
-	addSoSConstraint(model, lambda * Vdot + (V - rho) * (x^2 + y^2)^d)
+	addSoSConstraint(model, lambda * Vdot + (V - rho) * (x^2 + y^2)^d, basis_generator)
 	@setObjective(model, :Max, rho)
 	solve(model)
 

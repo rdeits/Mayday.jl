@@ -8,6 +8,7 @@ import Base: dot
 import DataStructures: OrderedDict
 export monomials, 
        chebyshev_basis_first_kind,
+       polynomial_basis,
        generator,
        generators, 
        evaluate,
@@ -60,14 +61,14 @@ function defPolynomial{T}(model::JuMP.Model, variables::Vector{Symbol}, basis::V
     return sum(basis .* coeffs)
 end
 
-defPolynomial(model::JuMP.Model, variables::Vector{Symbol}, max_monomial_degree::Integer) = defPolynomial(model, variables, monomials(variables, 0:max_monomial_degree))
+defPolynomial(model::JuMP.Model, variables::Vector{Symbol}, max_monomial_degree::Integer, basis_generator::Function=monomial) = defPolynomial(model, variables, polynomial_basis(variables, 0:max_monomial_degree, basis_generator))
 
 function defSoSPolynomial{T}(model::JuMP.Model, variables::Vector{Symbol}, basis::Vector{MPoly{T}})
     @defVar(model, Q[1:length(basis), 1:length(basis)], SDP)
     return sum(sum(basis .* Q, 1)' .* basis)
 end
 
-defSoSPolynomial(model::JuMP.Model, variables::Vector{Symbol}, max_monomial_degree::Integer) = defSoSPolynomial(model, variables, monomials(variables, 0:max_monomial_degree))
+defSoSPolynomial(model::JuMP.Model, variables::Vector{Symbol}, max_monomial_degree::Real, basis_generator::Function=monomial) = defSoSPolynomial(model, variables, polynomial_basis(variables, 0:max_monomial_degree, basis_generator))
 
 function addPolynomialEqualityConstraint(model::JuMP.Model, poly1::MPoly, poly2::MPoly)
     @assert poly1.vars == poly2.vars
@@ -83,9 +84,14 @@ function addPolynomialEqualityConstraint(model::JuMP.Model, poly1::MPoly, poly2:
     end
 end
 
-function addSoSConstraint(model, poly)
+function addSoSConstraint(model, poly, basis_generator::Function=monomial)
     max_degree = maximum([maximum(x) for x in keys(poly.terms)])
-    sos_poly = defSoSPolynomial(model, poly.vars, max_degree)
+    basis = polynomial_basis(poly.vars, 0:Int(ceil(max_degree / 2)), basis_generator)
+    addSoSConstraint(model, poly, basis)
+end
+
+function addSoSConstraint{T}(model, poly, basis::AbstractVector{MPoly{T}})
+    sos_poly = defSoSPolynomial(model, poly.vars, basis)
     addPolynomialEqualityConstraint(model, sos_poly, poly)
 end
 
