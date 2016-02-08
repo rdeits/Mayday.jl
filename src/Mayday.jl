@@ -7,6 +7,7 @@ import MultiPoly: print, evaluate
 import Base: dot
 import DataStructures: OrderedDict
 export monomials, 
+       chebyshev_basis_first_kind,
        generator,
        generators, 
        evaluate,
@@ -23,6 +24,8 @@ export monomials,
 generators(s::Symbol...) = MultiPoly.generators(MPoly{Float64}, s...)
 generator(s::Symbol) = generators(s)[1]
 
+include("basis.jl")
+
 function print{T<:JuMP.GenericAffExpr}(io::IO, p::MPoly{T})
     first = true
     for (m, c) in p
@@ -38,34 +41,6 @@ function print{T<:JuMP.GenericAffExpr}(io::IO, p::MPoly{T})
     if first
         print(io, zero(T))
     end
-end
-
-function monomials(variables, degrees=0:2)
-    sort!(degrees)
-    monomials = Array(MPoly{Float64}, 0)
-    powers = zeros(Int, length(variables))
-    total = 0
-    terms = OrderedDict(powers=>1.0)
-    while powers[1] <= degrees[end]
-        for d = degrees
-            if total == d
-                push!(monomials, MPoly{Float64}(terms, variables))
-                break
-            end
-        end
-        powers[end] += 1
-        total += 1
-        for j = length(powers):-1:2
-            if powers[j] > degrees[end] || total > degrees[end]
-                total -= (powers[j] - 1)
-                powers[j] = 0
-                powers[j-1] += 1
-            else
-                break
-            end
-        end
-    end
-    return monomials
 end
 
 grad(poly::MPoly, symbols::Symbol...) = [diff(poly, s) for s in symbols]
