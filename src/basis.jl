@@ -23,10 +23,6 @@ function variable_degrees{T<:Integer}(num_variables::Integer, poly_degrees::Abst
     return all_variable_degrees
 end
 
-# function monomial(variables::AbstractVector{Symbol}, variable_degrees::AbstractVector{Integer})
-#     MPoly{Float64}(OrderedDict(variable_degrees=>1), variables)
-# end
-
 function monomial(variable::Symbol, degree::Integer)
     MPoly{Float64}(OrderedDict([degree]=>1.0), [variable])
 end
