@@ -1,11 +1,14 @@
 module Mayday
 
 using JuMP
+import JuMP: getValue
 using MultiPoly
 import MultiPoly: print, evaluate
 import Base: dot
 import DataStructures: OrderedDict
 export monomials, 
+       chebyshev_basis_first_kind,
+       polynomial_basis,
        generator,
        generators, 
        evaluate,
@@ -22,6 +25,8 @@ export monomials,
 generators(s::Symbol...) = MultiPoly.generators(MPoly{Float64}, s...)
 generator(s::Symbol) = generators(s)[1]
 
+include("basis.jl")
+
 function print{T<:JuMP.GenericAffExpr}(io::IO, p::MPoly{T})
     first = true
     for (m, c) in p
@@ -37,34 +42,6 @@ function print{T<:JuMP.GenericAffExpr}(io::IO, p::MPoly{T})
     if first
         print(io, zero(T))
     end
-end
-
-function monomials(variables, degrees=0:2)
-    sort!(degrees)
-    monomials = Array(MPoly{Float64}, 0)
-    powers = zeros(Int, length(variables))
-    total = 0
-    terms = OrderedDict(powers=>1.0)
-    while powers[1] <= degrees[end]
-        for d = degrees
-            if total == d
-                push!(monomials, MPoly{Float64}(terms, variables))
-                break
-            end
-        end
-        powers[end] += 1
-        total += 1
-        for j = length(powers):-1:2
-            if powers[j] > degrees[end] || total > degrees[end]
-                total -= (powers[j] - 1)
-                powers[j] = 0
-                powers[j-1] += 1
-            else
-                break
-            end
-        end
-    end
-    return monomials
 end
 
 grad(poly::MPoly, symbols::Symbol...) = [diff(poly, s) for s in symbols]
@@ -84,14 +61,14 @@ function defPolynomial{T}(model::JuMP.Model, variables::Vector{Symbol}, basis::V
     return sum(basis .* coeffs)
 end
 
-defPolynomial(model::JuMP.Model, variables::Vector{Symbol}, max_monomial_degree::Integer) = defSoSPolynomial(model, variables, monomials(variables, 0:max_monomial_degree))
+defPolynomial(model::JuMP.Model, variables::Vector{Symbol}, max_monomial_degree::Integer, basis_generator::Function=monomial) = defPolynomial(model, variables, polynomial_basis(variables, 0:max_monomial_degree, basis_generator))
 
 function defSoSPolynomial{T}(model::JuMP.Model, variables::Vector{Symbol}, basis::Vector{MPoly{T}})
     @defVar(model, Q[1:length(basis), 1:length(basis)], SDP)
     return sum(sum(basis .* Q, 1)' .* basis)
 end
 
-defSoSPolynomial(model::JuMP.Model, variables::Vector{Symbol}, max_monomial_degree::Integer) = defSoSPolynomial(model, variables, monomials(variables, 0:max_monomial_degree))
+defSoSPolynomial(model::JuMP.Model, variables::Vector{Symbol}, max_monomial_degree::Real, basis_generator::Function=monomial) = defSoSPolynomial(model, variables, polynomial_basis(variables, 0:max_monomial_degree, basis_generator))
 
 function addPolynomialEqualityConstraint(model::JuMP.Model, poly1::MPoly, poly2::MPoly)
     @assert poly1.vars == poly2.vars
@@ -107,10 +84,19 @@ function addPolynomialEqualityConstraint(model::JuMP.Model, poly1::MPoly, poly2:
     end
 end
 
-function addSoSConstraint(model, poly)
+function addSoSConstraint(model, poly, basis_generator::Function=monomial)
     max_degree = maximum([maximum(x) for x in keys(poly.terms)])
-    sos_poly = defSoSPolynomial(model, poly.vars, max_degree)
+    basis = polynomial_basis(poly.vars, 0:Int(ceil(max_degree / 2)), basis_generator)
+    addSoSConstraint(model, poly, basis)
+end
+
+function addSoSConstraint{T}(model, poly, basis::AbstractVector{MPoly{T}})
+    sos_poly = defSoSPolynomial(model, poly.vars, basis)
     addPolynomialEqualityConstraint(model, sos_poly, poly)
+end
+
+function getValue{T<:JuMP.GenericAffExpr}(poly::MPoly{T})
+    MPoly{Float64}(OrderedDict{Vector{Int}, Float64}(zip(keys(poly.terms), map(getValue, values(poly.terms)))), poly.vars)
 end
 
 end
