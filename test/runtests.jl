@@ -11,3 +11,6 @@ test_spotopt_van_der_pol(Mayday.chebyshev_polynomial_first_kind)
 
 include("degrees.jl")
 test_variable_degrees()
+
+include("chebyshev.jl")
+test_univariate_chebyshev_polynomials_range()
