@@ -1,3 +1,4 @@
+__precompile__()
 module Mayday
 
 using JuMP
