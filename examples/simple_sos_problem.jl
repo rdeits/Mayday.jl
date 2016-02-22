@@ -8,26 +8,24 @@ function test_simple_sos_problem()
 	# d1(x) is SOS
 	# d2(x) is SOS
 
-	m = Model()
+	model = Model()
 	degree = 4
-	x = generator(:x)
-	monos = monomials([:x], 0:degree)
-	@defVar(m, coeffs[1:length(monos)])
-	v = sum(coeffs .* monos)
+	v = defPolynomial(model, [:x], degree)
 	@show v
-	d1 = defSoSPolynomial(m, [:x], degree / 2)
-	d2 = defSoSPolynomial(m, [:x], degree / 2)
-	addSoSConstraint(m, (v - 1) + d1 * (x + 1))
-	addSoSConstraint(m, -(v + 1) + d2 * (1 - x))
-	solve(m)
+	d1 = defSoSPolynomial(model, [:x], degree / 2)
+	d2 = defSoSPolynomial(model, [:x], degree / 2)
+	x = generator(:x)
+	addSoSConstraint(model, (v - 1) + d1 * (x + 1))
+	addSoSConstraint(model, -(v + 1) + d2 * (1 - x))
+	solve(model)
 
 	# Extract the result:
-	poly = sum(map(getValue, coeffs) .* monos)
-	@show poly
+	v = getValue(v)
+	@show v
 
 	# Verify it:
 	x = linspace(-2, 2)
-	y = map(x -> evaluate(poly, x), x)
+	y = map(x -> evaluate(v, x), x)
 
 	for i = 1:length(x)
 		if x[i] < -1
