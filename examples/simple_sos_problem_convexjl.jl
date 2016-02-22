@@ -1,14 +1,17 @@
-using JuMP
+using Convex
 using Mayday
 
-function test_simple_sos_problem()
+function test_simple_sos_problem_convexjl()
+	# Now let's solve the same problem as simple_sos_problem,
+	# but using Convex.jl as our modeling language
+
 	# Let's find a polynomial which is > 1 for x < -1 and < -1 for x > 1
 	# v(x) + d1(x) * (x + 1) - 1 is SOS
 	# -v(x) + d2(x) * (1 - x) - 1 is SOS
 	# d1(x) is SOS
 	# d2(x) is SOS
 
-	model = Model()
+	model = minimize(0)
 	degree = 4
 	v = defPolynomial(model, [:x], degree)
 	@show v
@@ -17,7 +20,7 @@ function test_simple_sos_problem()
 	x = generator(:x)
 	addSoSConstraint(model, v + d1 * (x + 1) - 1)
 	addSoSConstraint(model, -v + d2 * (1 - x) - 1)
-	solve(model)
+	solve!(model)
 
 	# Extract the result:
 	v = getValue(v)
@@ -35,4 +38,3 @@ function test_simple_sos_problem()
 		end
 	end
 end
-
