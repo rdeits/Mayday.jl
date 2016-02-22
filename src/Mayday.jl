@@ -5,13 +5,12 @@ using JuMP
 import JuMP: getValue
 using MultiPoly
 import MultiPoly: print, evaluate
-import Base: dot
 import DataStructures: OrderedDict
-export monomials, 
+export monomials,
        chebyshev_basis_first_kind,
        polynomial_basis,
        generator,
-       generators, 
+       generators,
        evaluate,
        deg,
        grad,
@@ -19,7 +18,7 @@ export monomials,
        diff,
        MPoly,
        defPolynomial,
-       defSoSPolynomial, 
+       defSoSPolynomial,
        addPolynomialEqualityConstraint,
        addSoSConstraint
 
