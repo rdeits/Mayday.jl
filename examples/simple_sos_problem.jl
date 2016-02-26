@@ -1,5 +1,6 @@
 using JuMP
 using Mayday
+using Base.Test
 
 function test_simple_sos_problem()
 	# Let's find a polynomial which is > 1 for x < -1 and < -1 for x > 1
@@ -35,3 +36,5 @@ function test_simple_sos_problem()
 		end
 	end
 end
+
+test_simple_sos_problem()
