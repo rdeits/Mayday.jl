@@ -1,8 +1,9 @@
 using JuMP
 using Mayday
+using Base.Test
 
 function test_spotopt_van_der_pol(basis_generator=Mayday.monomial)
-	# Replicates the test from https://github.com/spot-toolbox/spotless/blob/master/spotopt/tests/example_vanDerPol.m 
+	# Replicates the test from https://github.com/spot-toolbox/spotless/blob/master/spotopt/tests/example_vanDerPol.m
 	# which maximizes the verified Region of Attraction of a linear controller
 	# for the van der Pol oscillator about the origin.
 
@@ -34,6 +35,4 @@ function test_spotopt_van_der_pol(basis_generator=Mayday.monomial)
 	@test abs(result - 2.3045) < 1e-4
 end
 
-
-
-
+test_spotopt_van_der_pol()
