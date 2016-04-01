@@ -10,11 +10,7 @@ SoS programming is used in control theory to search for controllers for a dynami
 
 ## Requirements
 
-To use this package, you'll need an SDP solver with a JuMP interface. If you installed Mayday with `Pkg.add()`, then you've already gotten `SCS.jl`, a wrapper for the free SCS solver, and you're all set. You can also choose to install the `Mosek.jl` package if you want to use  Mosek, a proprietary solver. Mosek requires a license, but is free for academic use: <https://mosek.com/introduction/buy-mosek> and is generally faster.
-
-## Installation
-
-	julia> Pkg.clone("https://github.com/rdeits/Mayday.jl.git")
+To use this package, you'll need an SDP solver with a JuMP interface. If you installed Mayday with `Pkg.add()`, then you've already gotten `SCS.jl`, a wrapper for the free SCS solver, and you're all set. You may also want to install Mosek, a proprietary solver, with `Pkg.add("Mosek")`. Mosek requires a license, but is free for academic use: <https://mosek.com/introduction/buy-mosek> and is generally faster.
 
 ## Usage
 
