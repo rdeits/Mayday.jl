@@ -32,7 +32,7 @@ function test_spotopt_van_der_pol(basis_generator=Mayday.monomial)
 	@show result
 
 	# Verify rho against the answer we get from spotless
-	@test abs(result - 2.3045) < 1e-4
+	@test abs(result - 2.3045) < 1e-3
 end
 
 test_spotopt_van_der_pol()
