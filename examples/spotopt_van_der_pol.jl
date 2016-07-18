@@ -16,19 +16,19 @@ function test_spotopt_van_der_pol(basis_generator=Mayday.monomial)
 	J = jacobian(f, :x, :y)
 	A = evaluate(J, 0.0, 0.0)
 	P = lyap(A', eye(2,2))
-	V = ([x; y]' * P * [x; y])[1]
+	V = Mayday.quad([x; y], P)
 	Vdot = sum(grad(V, :x, :y) .* f)
 
 	# Solve for the maximum RoA, parameterized by rho
 	model = Model()
-	@defVar(model, rho)
+	@variable(model, rho)
 	lambda = defPolynomial(model, [:x, :y], 4, basis_generator)
 	d = Int(floor(deg(lambda * Vdot) / 2 - 1))
 	addSoSConstraint(model, lambda * Vdot + (V - rho) * (x^2 + y^2)^d, basis_generator)
-	@setObjective(model, :Max, rho)
+	@objective(model, Max, rho)
 	solve(model)
 
-	result = getValue(rho)
+	result = getvalue(rho)
 	@show result
 
 	# Verify rho against the answer we get from spotless

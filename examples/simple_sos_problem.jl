@@ -21,7 +21,7 @@ function test_simple_sos_problem()
 	solve(model)
 
 	# Extract the result:
-	v = getValue(v)
+	v = getvalue(v)
 	@show v
 
 	# Verify it:

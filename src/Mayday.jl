@@ -2,7 +2,7 @@ __precompile__()
 module Mayday
 
 using JuMP
-import JuMP: getValue
+import JuMP: getvalue
 using MultiPoly
 import MultiPoly: print, evaluate
 import DataStructures: OrderedDict
@@ -45,7 +45,7 @@ function print{T<:JuMP.GenericAffExpr}(io::IO, p::MPoly{T})
 end
 
 grad(poly::MPoly, symbols::Symbol...) = [diff(poly, s) for s in symbols]
-jacobian{T}(polys::Vector{MPoly{T}}, symbols::Symbol...) = vcat([grad(poly, symbols...)' for poly in polys]...)
+jacobian{T}(polys::Vector{MPoly{T}}, symbols::Symbol...) = permutedims(hcat([grad(poly, symbols...) for poly in polys]...), [2 1])
 
 function evaluate{PolyType, ArgType}(polys::Array{MPoly{PolyType}}, args::ArgType...)
     result_type = promote_type(PolyType, ArgType)
@@ -57,15 +57,26 @@ function evaluate{PolyType, ArgType}(polys::Array{MPoly{PolyType}}, args::ArgTyp
 end
 
 function defPolynomial{T}(model::JuMP.Model, variables::Vector{Symbol}, basis::Vector{MPoly{T}})
-    @defVar(model, coeffs[1:length(basis)])
+    @variable(model, coeffs[1:length(basis)])
     return sum(basis .* coeffs)
 end
 
 defPolynomial(model::JuMP.Model, variables::Vector{Symbol}, max_monomial_degree::Integer, basis_generator::Function=monomial) = defPolynomial(model, variables, polynomial_basis(variables, 0:max_monomial_degree, basis_generator))
 
+function quad{Tx, TQ, Ty}(x::AbstractVector{Tx}, Q::AbstractMatrix{TQ}, y::AbstractVector{Ty})
+    result = zero(promote_type(Tx, promote_type(TQ, Ty)))
+    for (i, xi) in enumerate(x)
+        for (j, yj) in enumerate(y)
+            result += xi * Q[i,j] * yj
+        end
+    end
+    result
+end
+quad(x::AbstractVector, Q::AbstractMatrix) = quad(x, Q, x)
+
 function defSoSPolynomial{T}(model::JuMP.Model, variables::Vector{Symbol}, basis::Vector{MPoly{T}})
-    @defVar(model, Q[1:length(basis), 1:length(basis)], SDP)
-    return sum(sum(basis .* Q, 1)' .* basis)
+    @variable(model, Q[1:length(basis), 1:length(basis)], SDP)
+    quad(basis, Q)
 end
 
 defSoSPolynomial(model::JuMP.Model, variables::Vector{Symbol}, max_monomial_degree::Real, basis_generator::Function=monomial) = defSoSPolynomial(model, variables, polynomial_basis(variables, 0:max_monomial_degree, basis_generator))
@@ -74,12 +85,12 @@ function addPolynomialEqualityConstraint(model::JuMP.Model, poly1::MPoly, poly2:
     @assert poly1.vars == poly2.vars
     constrained_powers = []
     for (powers, coefficient) in poly1
-        @addConstraint(model, poly2[powers] == coefficient)
+        @constraint(model, poly2[powers] == coefficient)
         push!(constrained_powers, powers)
     end
     for (powers, coefficient) in poly2
         if !in(powers, constrained_powers)
-            @addConstraint(model, poly1[powers] == coefficient)
+            @constraint(model, poly1[powers] == coefficient)
         end
     end
 end
@@ -95,8 +106,8 @@ function addSoSConstraint{T}(model, poly, basis::AbstractVector{MPoly{T}})
     addPolynomialEqualityConstraint(model, sos_poly, poly)
 end
 
-function getValue{T<:JuMP.GenericAffExpr}(poly::MPoly{T})
-    MPoly{Float64}(OrderedDict{Vector{Int}, Float64}(zip(keys(poly.terms), map(getValue, values(poly.terms)))), poly.vars)
+function getvalue{T<:JuMP.GenericAffExpr}(poly::MPoly{T})
+    MPoly{Float64}(OrderedDict{Vector{Int}, Float64}(zip(keys(poly.terms), map(getvalue, values(poly.terms)))), poly.vars)
 end
 
 end
