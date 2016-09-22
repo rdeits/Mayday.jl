@@ -14,9 +14,6 @@ branches:
     - master
     - stable
 
-before_install:
-  - julia -e 'Pkg.add("JuMP"); Pkg.checkout("JuMP")'
-
 after_success:
   - julia -e 'cd(Pkg.dir("Mayday")); Pkg.add("Coverage"); using Coverage; Codecov.submit(process_folder())'
 
