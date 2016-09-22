@@ -1,5 +1,5 @@
 julia 0.4
-JuMP 0.13
+JuMP 0.14
 MultiPoly 0.1
-SCS
+SCS 0.2.5
 DataStructures
