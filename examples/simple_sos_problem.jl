@@ -1,6 +1,7 @@
 using JuMP
 using Mayday
 using Base.Test
+using SCS
 
 function test_simple_sos_problem()
 	# Let's find a polynomial which is > 1 for x < -1 and < -1 for x > 1
@@ -9,7 +10,7 @@ function test_simple_sos_problem()
 	# d1(x) is SOS
 	# d2(x) is SOS
 
-	model = Model()
+	model = Model(solver=SCSSolver())
 	degree = 4
 	v = defPolynomial(model, [:x], degree)
 	@show v
