@@ -1,6 +1,7 @@
 using JuMP
 using Mayday
 using Base.Test
+using SCS
 
 function test_spotopt_van_der_pol(basis_generator=Mayday.monomial)
 	# Replicates the test from https://github.com/spot-toolbox/spotless/blob/master/spotopt/tests/example_vanDerPol.m
@@ -20,7 +21,7 @@ function test_spotopt_van_der_pol(basis_generator=Mayday.monomial)
 	Vdot = sum(grad(V, :x, :y) .* f)
 
 	# Solve for the maximum RoA, parameterized by rho
-	model = Model()
+	model = Model(solver=SCSSolver())
 	@variable(model, rho)
 	lambda = defPolynomial(model, [:x, :y], 4, basis_generator)
 	d = Int(floor(deg(lambda * Vdot) / 2 - 1))

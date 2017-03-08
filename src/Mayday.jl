@@ -57,7 +57,7 @@ function evaluate{PolyType, ArgType}(polys::Array{MPoly{PolyType}}, args::ArgTyp
 end
 
 function defPolynomial{T}(model::JuMP.Model, variables::Vector{Symbol}, basis::Vector{MPoly{T}})
-    @variable(model, coeffs[1:length(basis)])
+    coeffs = @variable(model, [1:length(basis)], basename="coeff")
     return sum(basis .* coeffs)
 end
 
@@ -75,7 +75,8 @@ end
 quad(x::AbstractVector, Q::AbstractMatrix) = quad(x, Q, x)
 
 function defSoSPolynomial{T}(model::JuMP.Model, variables::Vector{Symbol}, basis::Vector{MPoly{T}})
-    @variable(model, Q[1:length(basis), 1:length(basis)], SDP)
+    Q = @variable(model, [1:length(basis), 1:length(basis)], basename="Q")
+    @SDconstraint(model, Q >= 0)
     quad(basis, Q)
 end
 
